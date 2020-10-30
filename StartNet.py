@@ -54,16 +54,17 @@ def getdata():
     return X_train_train, y_train_train, X_train_val, y_train_val
 
 
-def breakthread():
-    global breaktrainmark
-    databreak = input("break thread started, key 's' to get out\n")
-    if databreak == "s":
-        breaktrainmark = False
+# def breakthread():
+#     global breaktrainmark
+#     databreak = input("break thread started, key 's' to get out\n")
+#     if databreak == "s":
+#         breaktrainmark = False
 
 
 if __name__ == "__main__":
-    brakt = Thread(target=breakthread, args=())
-    brakt.start()
+    # brakt = Thread(target=breakthread, args=())
+    # brakt.start()
+    f_log = open("log_file.txt")
     X_train_train, y_train_train, X_train_val, y_train_val = getdata()
     pop = Populations(eachPopNum)
     while True:
@@ -76,6 +77,7 @@ if __name__ == "__main__":
             pop.checkloop(X_train_train[index1:index2], y_train_train[index1:index2])
             pop.naturalSelection()
             t2 = time.perf_counter()
-            print("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}".format(
-                pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit,
-                pop.bestplayer.rightnum, t2 - t1))
+            f_log.write("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}, marktime:{}".format(pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit, pop.bestplayer.rightnum, t2 - t1, time.time()))
+            # print("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}".format(
+            #     pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit,
+            #     pop.bestplayer.rightnum, t2 - t1))
