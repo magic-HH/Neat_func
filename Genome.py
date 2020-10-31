@@ -169,14 +169,14 @@ class Genome:
 
     def mutate(self, innovationhistory):  # 杂交时变异
         rand1 = np.random.uniform(0, 1)
-        if rand1 < 0.8:
+        if rand1 < mutateratiodict.get("1"):  # 0.8
             for i in range(len(self.genes)):
                 self.genes[i].mutateweight()
         rand2 = np.random.uniform(0, 1)
-        if rand2 < 0.5:
+        if rand2 < mutateratiodict.get("2"):  # 0.5
             self.addConnection(innovationhistory)
         rand3 = np.random.uniform(0, 1)
-        if rand3 < 0.03:
+        if rand3 < mutateratiodict.get("3"):  # 0.03
             self.addNode(innovationhistory)
 
     def addConnection(self, innovationhistory):  # 添加一条新的连接

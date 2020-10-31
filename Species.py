@@ -131,7 +131,7 @@ class Species:
             self.players[i].fitness /= len(self.players)
 
     def cull(self):
-        if len(self.players) > 2:
+        if len(self.players) > 3:
             dellist = []
             for i in range(math.ceil(len(self.players) / 2), len(self.players) - 1):
                 dellist.append(self.players[i])

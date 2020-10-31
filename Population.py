@@ -111,7 +111,7 @@ class Populations:
             return
         dellist = []
         for i in range(len(self.species)):
-            if self.species[i].staleness >= 15:
+            if self.species[i].staleness >= 30:
                 dellist.append(self.species[i])
         if len(dellist) == len(self.species):
             dellist.pop(np.random.randint(0, len(dellist)))
