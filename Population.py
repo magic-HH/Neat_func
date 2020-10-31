@@ -114,7 +114,7 @@ class Populations:
             if self.species[i].staleness >= 15:
                 dellist.append(self.species[i])
         if len(dellist) == len(self.species):
-            dellist.pop()
+            dellist.pop(np.random.randint(0, len(dellist)))
         for i in dellist:
             self.species.remove(i)
 
@@ -127,7 +127,7 @@ class Populations:
             if (self.species[i].averagefitness / averageSum * len(self.pop)) < 1:
                 dellist.append(self.species[i])
         if len(dellist) == len(self.species):
-            dellist.pop()
+            dellist.pop(np.random.randint(0, len(dellist)))
 
         for i in dellist:
             self.species.remove(i)

@@ -55,6 +55,15 @@ class Genome:
                                    localNextConnectionNumber))
                 localNextConnectionNumber += 1
 
+    def printNodeMap(self):
+        nodeplot = []
+        for tempnode in self.nodes:
+            nodeplot.append([tempnode.number, tempnode.layer])
+        connectplot = []
+        for tempnodec in self.genes:
+            connectplot.append([[tempnodec.fromNode.number, tempnodec.fromNode.layer], [tempnodec.toNode.number, tempnodec.toNode.layer], tempnodec.weight])
+        return nodeplot, connectplot, self.layers
+
     def getNode(self, nodeNumber) -> bool:  # 获取节点
         for i in range(len(self.nodes)):
             if self.nodes[i].number == nodeNumber:
@@ -129,6 +138,12 @@ class Genome:
                 if self.nodes[i].layer >= self.getNode(newNodeno).layer:
                     self.nodes[i].layer = self.nodes[i].layer + 1
             self.layers += 1
+        randomnodes = np.random.randint(0, len(self.nodes))
+        while self.nodes[randomnodes].layer <= self.getNode(newNodeno).layer:
+            randomnodes = np.random.randint(0, len(self.nodes))
+        connectioninnovationnumber = self.getInnovationNumber(innovationhistiry, self.getNode(newNodeno), self.nodes[randomnodes])
+        self.genes.append(ConnectionGene(self.getNode(newNodeno), self.nodes[randomnodes], 1, connectioninnovationnumber))
+
         self.connectNodes()
 
     def fullyConnection(self) -> bool:  # 检查是否全连接
@@ -172,7 +187,7 @@ class Genome:
         randomnode2 = np.random.randint(0, len(self.nodes))
         for i in range(len(self.nodes)):
             for j in range(len(self.nodes)):
-                if (self.nodes[i].layer != self.nodes[j].layer) and (not self.nodes[i].isconnectedto(self.nodes[j])):
+                if (self.nodes[i].layer != self.nodes[j].layer) and (not (self.nodes[i].isconnectedto(self.nodes[j])) or not(self.nodes[j].isconnectedto(self.nodes[i]))):
                     randomnode1 = i
                     randomnode2 = j
                     break
