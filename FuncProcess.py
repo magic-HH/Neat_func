@@ -18,7 +18,7 @@ class Player:
         self.totalnum = 0
         self.rightnum = 0
 
-    def calculateFitness(self):  # fitnesscount
+    def calculateFitness(self):  # fitnesscount\
         if self.answer is not None and self.decision is not None:
             self.totalnum = len(self.answer)
             self.rightnum = 0
@@ -31,12 +31,12 @@ class Player:
                 if self.answer[i] == tempanswer:
                     self.rightnum += 1
                     if self.answer[i] == 0:
-                        self.fitness *= np.random.uniform(8, dataRatio + 5)
+                        self.fitness *= np.random.uniform(2, dataRatio - 7)
 
             if self.rightnum == 0:
                 self.rightnum = np.random.uniform(0, 0.3)
 
-            self.fitness *= self.rightnum * np.random.uniform(1, 5)
+            self.fitness *= self.rightnum * np.random.uniform(1, 3)
             # if self.fitness >= 2:
             #     print("player fitness: {}".format(self.fitness))
 

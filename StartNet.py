@@ -28,6 +28,7 @@ dataPath = "./datafile/final_data.csv"
 breaktrainmark = True
 mutatemark = False
 hangupmark = False
+drawnet = False
 pignum = 0
 
 
@@ -63,6 +64,7 @@ def getdata():
 
 
 def breakthread():
+    global drawnet
     global breaktrainmark
     global hangupmark
     global mutateratiodict
@@ -75,27 +77,26 @@ def breakthread():
                 hangupmark = False
             else:
                 hangupmark = True
+        elif databreak == "d":
+            drawnet = True
         elif databreak == "m":
             hangupmark = True
             mutatemark = True
             while mutatemark:
-                tempdata = input("choose to change mutateratio: 1 2 3 for mutateweight, mutateconnection, mutatenode")
+                tempdata = input("choose to change mutateratio: 1 2 3 for mutateweight, mutateconnection, mutatenode\n")
                 try:
                     while True:
-                        tempdatachoose = input("put + or - to change the mutattratio")
+                        tempdatachoose = input("put number to change the mutattratio or e for exit\n")
                         if tempdatachoose == "e":
                             hangupmark = False
                             mutatemark = False
                             break
                         mutateratiodict.get(tempdata)
-                        if tempdatachoose == "-":
-                            mutateratiodict[tempdata] = mutateratiodict.get(tempdata) - 0.01
-                            print("mutateratio{}:{}".format(tempdata, mutateratiodict.get(tempdata)))
-                        elif tempdatachoose == "+":
-                            mutateratiodict[tempdata] = mutateratiodict.get(tempdata) + 0.01
+                        if sum([n.isdigit() for n in tempdatachoose.strip().split('.')]) == 2:
+                            mutateratiodict[tempdata] = float(tempdatachoose)
                             print("mutateratio{}:{}".format(tempdata, mutateratiodict.get(tempdata)))
                         else:
-                            print("put - or +")
+                            print("put right number")
                 except:
                     print("input error")
 
@@ -132,18 +133,27 @@ if __name__ == "__main__":
     while True:
         if not breaktrainmark:
             break
-        for i in range(1, int((len(X_train_train) / datasplit))):
-            if not breaktrainmark:
-                break
-            elif hangupmark:
-                while hangupmark:
-                    pass
+        for i in range(0, int((len(X_train_train) / datasplit))):
             index1 = i * datasplit
             index2 = (i + 1) * datasplit
             t1 = time.perf_counter()
             pop.checkloop(X_train_train[index1:index2], y_train_train[index1:index2])
             pop.naturalSelection()
             t2 = time.perf_counter()
+            if drawnet:
+                changemap.clear()
+                nodeplot, connectplot, layers = pop.bestplayer.brain.printNodeMap()
+                gap = 5
+                cutplot(nodeplot, layers)
+                plt.title("Neat Map")
+                for node in nodeplot:
+                    plt.plot(node[1] * gap, changemap.get(node[0]), "og")
+                for connect in connectplot:
+                    plt.plot([connect[0][1] * gap, connect[1][1] * gap],
+                             [changemap.get(connect[0][0]), changemap.get(connect[1][0])], "-b")
+                plt.show()
+                drawnet = False
+
             if pop.gen % 30 == 0:
                 changemap.clear()
                 nodeplot, connectplot, layers = pop.bestplayer.brain.printNodeMap()
@@ -155,10 +165,15 @@ if __name__ == "__main__":
                 for connect in connectplot:
                     plt.plot([connect[0][1] * gap, connect[1][1] * gap],
                              [changemap.get(connect[0][0]), changemap.get(connect[1][0])], "-b")
-                plt.savefig("neat_brain_{}.png".format(pignum))
+                plt.savefig("./network/neat_brain_{}.png".format(pignum))
                 pignum += 1
                 # hangupmark = False
 
             # f_log.write("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}, marktime:{}\n".format(pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit, pop.bestplayer.rightnum, t2 - t1, time.time()))
             print("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}, marktime:{}".format(pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit, pop.bestplayer.rightnum, t2 - t1, time.time()))
+            if not breaktrainmark:
+                break
+            elif hangupmark:
+                while hangupmark:
+                    pass
     # f_log.close()

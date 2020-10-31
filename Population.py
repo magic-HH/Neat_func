@@ -53,8 +53,8 @@ class Populations:
         averageSum = self.getAvgFitnessSum()
         children = []  # type: list[Player]
         for s in self.species:
-            # if len(s.players) == 0:
-            #     continue
+            if len(s.players) == 0:
+                continue
             children.append(s.players[0].clone())
             NoOfChildren = math.floor(s.averagefitness / averageSum * len(self.pop)) - 1
             for i in range(NoOfChildren):
@@ -107,27 +107,37 @@ class Populations:
                     self.species[j] = tempspecies
 
     def killStaleSpecies(self):
-        if len(self.species) == 1:
+        if len(self.species) < 2:
             return
         dellist = []
         for i in range(len(self.species)):
-            if self.species[i].staleness >= 30:
+            if self.species[i].staleness >= 25:
                 dellist.append(self.species[i])
-        if len(dellist) == len(self.species):
-            dellist.pop(np.random.randint(0, len(dellist)))
+        if len(dellist) >= len(self.species) - 2:
+            for i in range(len(dellist) - len(self.species) + 2):
+                dellist.pop(np.random.randint(0, len(dellist)))
         for i in dellist:
             self.species.remove(i)
 
     def killbadspecies(self):
-        if len(self.species) == 1:
+        dellist = []
+        for s in self.species:
+            if len(s.players) == 0:
+                dellist.append(s)
+        for i in dellist:
+            self.species.remove(i)
+
+        if len(self.species) < 3:
             return
         averageSum = self.getAvgFitnessSum()
         dellist = []
         for i in range(len(self.species)):
             if (self.species[i].averagefitness / averageSum * len(self.pop)) < 1:
                 dellist.append(self.species[i])
-        if len(dellist) == len(self.species):
-            dellist.pop(np.random.randint(0, len(dellist)))
+
+        if len(dellist) >= len(self.species) - 2:
+            for i in range(len(dellist) - len(self.species) + 2):
+                dellist.pop(np.random.randint(0, len(dellist)))
 
         for i in dellist:
             self.species.remove(i)
