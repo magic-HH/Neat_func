@@ -23,6 +23,7 @@ datasplit = 50
 dataPath = "./datafile/final_data.csv"
 breaktrainmark = True
 hangupmark = False
+pignum = 0
 
 
 def timecount(func):
@@ -92,9 +93,10 @@ def cutplot(nodeplot, layers):
 
 
 if __name__ == "__main__":
-    brakt = Thread(target=breakthread, args=())
-    brakt.start()
-    # f_log = open("log_file.txt", "w+")
+    # brakt = Thread(target=breakthread, args=())
+    # brakt.start()
+    print("Started!")
+    # f_log = open("log_file.txt", "a+")
     X_train_train, y_train_train, X_train_val, y_train_val = getdata()
     pop = Populations(eachPopNum)
     while True:
@@ -109,7 +111,7 @@ if __name__ == "__main__":
             pop.checkloop(X_train_train[index1:index2], y_train_train[index1:index2])
             pop.naturalSelection()
             t2 = time.perf_counter()
-            if hangupmark:
+            if pop.gen%30 == 0:
                 nodeplot, connectplot, layers = pop.bestplayer.brain.printNodeMap()
                 gap = 5
                 cutplot(nodeplot, layers)
@@ -119,8 +121,9 @@ if __name__ == "__main__":
                 for connect in connectplot:
                     plt.plot([connect[0][1] * gap, connect[1][1] * gap],
                              [changemap.get(connect[0][0]), changemap.get(connect[1][0])], "-b")
-                plt.show()
-                hangupmark = False
+                plt.savefig("neat_brain_{}.png".format(pignum))
+                pignum += 1
+                # hangupmark = False
 
             # f_log.write("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}, marktime:{}\n".format(pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit, pop.bestplayer.rightnum, t2 - t1, time.time()))
             print("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}, marktime:{}".format(pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit, pop.bestplayer.rightnum, t2 - t1, time.time()))
