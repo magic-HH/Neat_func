@@ -99,7 +99,7 @@ class Species:
         else:
             self.averagefitness = sumcount / len(self.players)
 
-    def playerBrith(self, innovationHistory):
+    def playerBrith(self, innovationHistory, showprocess = False, mutateratio = mutateratiodict):
         baby = None  # type: Player
         if np.random.uniform(0, 1) < 0.25:
             baby = self.selectplayer().clone()
@@ -111,7 +111,13 @@ class Species:
                 baby = parent2.crossover(parent1)
             else:
                 baby = parent1.crossover(parent2)
-        baby.brain.mutate(innovationHistory)
+            tempplayers = []
+            if showprocess:
+                tempplayers.append(parent1.brain.printNodeMap())
+                tempplayers.append(parent2.brain.printNodeMap())
+                tempplayers.append(baby.brain.printNodeMap())
+                print(tempplayers)
+        baby.brain.mutate(innovationHistory, mutateratio)
         return baby
 
     def selectplayer(self):

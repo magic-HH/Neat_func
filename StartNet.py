@@ -29,6 +29,7 @@ breaktrainmark = True
 mutatemark = False
 hangupmark = False
 drawnet = False
+showcrossover = False
 pignum = 0
 
 
@@ -67,19 +68,22 @@ def breakthread():
     global drawnet
     global breaktrainmark
     global hangupmark
-    global mutateratiodict
+    # global mutateratiodict
+    global showcrossover
     while(breaktrainmark):
         databreak = input("break thread started, key to control\n")
-        if databreak == "s":
+        if databreak == "s":  # exit
             breaktrainmark = False
-        elif databreak == "h":
+        elif databreak == "h":  # 挂起
             if hangupmark:
                 hangupmark = False
             else:
                 hangupmark = True
-        elif databreak == "d":
+        elif databreak == "d":  # 显示当前最优网络结构模型
             drawnet = True
-        elif databreak == "m":
+        elif databreak == "c":  # 显示杂交过程
+            showcrossover = True
+        elif databreak == "m":  # 改变变异参数
             hangupmark = True
             mutatemark = True
             while mutatemark:
@@ -127,7 +131,7 @@ if __name__ == "__main__":
     brakt = Thread(target=breakthread, args=())
     brakt.start()
     print("Started!")
-    # f_log = open("log_file.txt", "a+")
+    f_log = open("log_file.txt", "w+")
     X_train_train, y_train_train, X_train_val, y_train_val = getdata()
     pop = Populations(eachPopNum)
     while True:
@@ -136,44 +140,58 @@ if __name__ == "__main__":
         for i in range(0, int((len(X_train_train) / datasplit))):
             index1 = i * datasplit
             index2 = (i + 1) * datasplit
-            t1 = time.perf_counter()
-            pop.checkloop(X_train_train[index1:index2], y_train_train[index1:index2])
-            pop.naturalSelection()
-            t2 = time.perf_counter()
-            if drawnet:
-                changemap.clear()
-                nodeplot, connectplot, layers = pop.bestplayer.brain.printNodeMap()
-                gap = 5
-                cutplot(nodeplot, layers)
-                plt.title("Neat Map")
-                for node in nodeplot:
-                    plt.plot(node[1] * gap, changemap.get(node[0]), "og")
-                for connect in connectplot:
-                    plt.plot([connect[0][1] * gap, connect[1][1] * gap],
-                             [changemap.get(connect[0][0]), changemap.get(connect[1][0])], "-b")
-                plt.show()
-                drawnet = False
+            for i in range(200):
+                t1 = time.perf_counter()
+                pop.checkloop(X_train_train[index1:index2], y_train_train[index1:index2])
+                if showcrossover:
+                    pop.naturalSelection(showcrossover, mutateratiop=mutateratiodict)
+                    showcrossover = False
+                else:
+                    pop.naturalSelection(mutateratiop=mutateratiodict)
 
-            if pop.gen % 30 == 0:
-                changemap.clear()
-                nodeplot, connectplot, layers = pop.bestplayer.brain.printNodeMap()
-                gap = 5
-                cutplot(nodeplot, layers)
-                plt.title("Neat Map")
-                for node in nodeplot:
-                    plt.plot(node[1] * gap, changemap.get(node[0]), "og")
-                for connect in connectplot:
-                    plt.plot([connect[0][1] * gap, connect[1][1] * gap],
-                             [changemap.get(connect[0][0]), changemap.get(connect[1][0])], "-b")
-                plt.savefig("./network/neat_brain_{}.png".format(pignum))
-                pignum += 1
-                # hangupmark = False
+                t2 = time.perf_counter()
+                if drawnet:
+                    changemap.clear()
+                    nodeplot, connectplot, layers = pop.bestplayer.brain.printNodeMap()
+                    gap = 5
+                    cutplot(nodeplot, layers)
+                    plt.title("Neat Map")
+                    for node in nodeplot:
+                        plt.plot(node[1] * gap, changemap.get(node[0]), "og")
+                    for connect in connectplot:
+                        plt.plot([connect[0][1] * gap, connect[1][1] * gap],
+                                 [changemap.get(connect[0][0]), changemap.get(connect[1][0])], "-b")
+                    plt.show()
+                    drawnet = False
 
-            # f_log.write("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}, marktime:{}\n".format(pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit, pop.bestplayer.rightnum, t2 - t1, time.time()))
-            print("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}, marktime:{}".format(pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit, pop.bestplayer.rightnum, t2 - t1, time.time()))
-            if not breaktrainmark:
-                break
-            elif hangupmark:
-                while hangupmark:
-                    pass
-    # f_log.close()
+                if pop.gen % 15 == 0:
+                    # if pop.gen > 400:
+                    #     mutateratiodict["3"] = 0
+                    # changemap.clear()
+
+                    f_log.write("gen:{}\n".format(pop.gen))
+                    for players in pop.pop:
+                        nodeplot, connectplot, layers = players.brain.printNodeMap()
+                        f_log.write(str(nodeplot)+"\n")
+                        f_log.write(str(connectplot)+"\n\n")
+                    f_log.flush()
+                    # gap = 5
+                    # cutplot(nodeplot, layers)
+                    # plt.title("Neat Map")
+                    # for node in nodeplot:
+                    #     plt.plot(node[1] * gap, changemap.get(node[0]), "og")
+                    # for connect in connectplot:
+                    #     plt.plot([connect[0][1] * gap, connect[1][1] * gap],
+                    #              [changemap.get(connect[0][0]), changemap.get(connect[1][0])], "-b")
+                    # plt.savefig("./network/neat_brain_{}.png".format(pignum))
+                    # pignum += 1
+                    # hangupmark = False
+
+                # f_log.write("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}, marktime:{}\n".format(pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit, pop.bestplayer.rightnum, t2 - t1, time.time()))
+                print("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}, marktime:{}".format(pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit, pop.bestplayer.rightnum, t2 - t1, time.time()))
+                if not breaktrainmark:
+                    exit()
+                elif hangupmark:
+                    while hangupmark:
+                        pass
+        # f_log.close()

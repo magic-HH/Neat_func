@@ -6,10 +6,11 @@
 from FuncProcess import *
 from ConnectionHistory import *
 from Species import *
+from StartNet import mutateratiodict
 
 
 class Populations:
-    def __init__(self, size=None):
+    def __init__(self, size=None, mutateratio=mutateratiodict):
         self.pop = []  # type: list[Player]
         self.bestplayer = None  # type: Player
         self.bestspecies = 0
@@ -42,7 +43,7 @@ class Populations:
             self.bestplayer = tempbest
             self.bestfitness = tempbest.fitness
 
-    def naturalSelection(self):
+    def naturalSelection(self,showcrossover = False, mutateratiop=mutateratiodict):
         self.speciate()
         self.calculateFitness()
         self.sortSpecies()
@@ -58,9 +59,14 @@ class Populations:
             children.append(s.players[0].clone())
             NoOfChildren = math.floor(s.averagefitness / averageSum * len(self.pop)) - 1
             for i in range(NoOfChildren):
-                children.append(s.playerBrith(self.innovationHistory))
+                children.append(s.playerBrith(self.innovationHistory, mutateratio = mutateratiop))
+
         while len(children) < len(self.pop):
-            children.append(self.species[0].playerBrith(self.innovationHistory))
+            if showcrossover == True:
+                children.append(self.species[0].playerBrith(self.innovationHistory, True, mutateratio = mutateratiop))
+                showcrossover = False
+            else:
+                children.append(self.species[0].playerBrith(self.innovationHistory, mutateratio = mutateratiop))
         self.pop.clear()
         self.pop = children.copy()
         self.gen += 1  # generation add
@@ -107,15 +113,14 @@ class Populations:
                     self.species[j] = tempspecies
 
     def killStaleSpecies(self):
-        if len(self.species) < 2:
+        if len(self.species) < 1:
             return
         dellist = []
         for i in range(len(self.species)):
             if self.species[i].staleness >= 25:
                 dellist.append(self.species[i])
-        if len(dellist) >= len(self.species) - 2:
-            for i in range(len(dellist) - len(self.species) + 2):
-                dellist.pop(np.random.randint(0, len(dellist)))
+        if len(dellist) == len(self.species):
+            dellist.pop(np.random.randint(0, len(dellist)))
         for i in dellist:
             self.species.remove(i)
 
@@ -127,7 +132,7 @@ class Populations:
         for i in dellist:
             self.species.remove(i)
 
-        if len(self.species) < 3:
+        if len(self.species) < 1:
             return
         averageSum = self.getAvgFitnessSum()
         dellist = []
@@ -135,8 +140,7 @@ class Populations:
             if (self.species[i].averagefitness / averageSum * len(self.pop)) < 1:
                 dellist.append(self.species[i])
 
-        if len(dellist) >= len(self.species) - 2:
-            for i in range(len(dellist) - len(self.species) + 2):
+        if len(dellist) == len(self.species):
                 dellist.pop(np.random.randint(0, len(dellist)))
 
         for i in dellist:
@@ -151,8 +155,7 @@ class Populations:
 
     def cullSpecies(self):
         for s in self.species:
-            if np.random.uniform(-2, 10) < (-0.5 + len(s.players)):
-                s.cull()
+            s.cull()
             s.fitnesssharing()
             s.setaverage()
             if len(s.players) == 0:
