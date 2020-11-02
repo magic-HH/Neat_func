@@ -63,22 +63,13 @@ class Species:
 
     def sortSpecies(self):
         for i in range(len(self.players)):
+
             for j in range(len(self.players) - 1):
                 if self.players[j].fitness < self.players[j + 1].fitness:
                     tempplayer = self.players[j + 1]
                     self.players[j + 1] = self.players[j]
                     self.players[j] = tempplayer
 
-        # for i in range(len(self.players)):
-        #     max = 0
-        #     maxindex = 0
-        #     for j in range(len(self.players)):
-        #         if self.players[j].fitness > max:
-        #             max = self.players[j].fitness
-        #             maxindex = j
-        #     temp.append(self.players[maxindex])
-        #     self.players.remove(maxindex)
-        #     i -= 1
         if len(self.players) == 0:
             self.staleness = 16
             return

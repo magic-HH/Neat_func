@@ -16,6 +16,7 @@ class Genome:
     """"
         基因类，包含节点基因及连接基因
     """
+
     def __init__(self, layer_in=None, layer_out=None, crossover=None):
         self.genes = []  # type: list[ConnectionGene]
         self.nodes = []  # type: list[Node]
@@ -62,7 +63,8 @@ class Genome:
             nodeplot.append([tempnode.number, tempnode.layer])
         connectplot = []
         for tempnodec in self.genes:
-            connectplot.append([[tempnodec.fromNode.number, tempnodec.fromNode.layer], [tempnodec.toNode.number, tempnodec.toNode.layer], tempnodec.weight])
+            connectplot.append([[tempnodec.fromNode.number, tempnodec.fromNode.layer],
+                                [tempnodec.toNode.number, tempnodec.toNode.layer], tempnodec.weight])
         return nodeplot, connectplot, self.layers
 
     def getNode(self, nodeNumber) -> bool:  # 获取节点
@@ -112,7 +114,8 @@ class Genome:
             innonumbers = []
             for i in range(len(self.genes)):
                 innonumbers.append(self.genes[i].innovationNo)
-            innovationhistory.append(ConnectionHistory(fromnode.number, tonode.number, connectioninnovationnumber, innonumbers))
+            innovationhistory.append(
+                ConnectionHistory(fromnode.number, tonode.number, connectioninnovationnumber, innonumbers))
             nextConnectionNo += 1
         return connectioninnovationnumber
 
@@ -130,10 +133,13 @@ class Genome:
                                          connectioninnovationnumber))
         connectioninnovationnumber = self.getInnovationNumber(innovationhistiry, self.getNode(newNodeno),
                                                               self.genes[randomconnection].toNode)
-        self.genes.append(ConnectionGene(self.getNode(newNodeno), self.genes[randomconnection].toNode, self.genes[randomconnection].weight, connectioninnovationnumber))
-        self.getNode(newNodeno).layer = self.genes[randomconnection].fromNode.layer+1
-        connectioninnovationnumber = self.getInnovationNumber(innovationhistiry, self.nodes[self.biasNode], self.getNode(newNodeno))
-        self.genes.append(ConnectionGene(self.nodes[self.biasNode], self.getNode(newNodeno), 0, connectioninnovationnumber))
+        self.genes.append(ConnectionGene(self.getNode(newNodeno), self.genes[randomconnection].toNode,
+                                         self.genes[randomconnection].weight, connectioninnovationnumber))
+        self.getNode(newNodeno).layer = self.genes[randomconnection].fromNode.layer + 1
+        connectioninnovationnumber = self.getInnovationNumber(innovationhistiry, self.nodes[self.biasNode],
+                                                              self.getNode(newNodeno))
+        self.genes.append(
+            ConnectionGene(self.nodes[self.biasNode], self.getNode(newNodeno), 0, connectioninnovationnumber))
         if self.getNode(newNodeno).layer == self.genes[randomconnection].toNode.layer:
             for i in range(len(self.nodes) - 1):
                 if self.nodes[i].layer >= self.getNode(newNodeno).layer:
@@ -142,21 +148,16 @@ class Genome:
         randomnodes = np.random.randint(0, len(self.nodes))
         while self.nodes[randomnodes].layer <= self.getNode(newNodeno).layer:
             randomnodes = np.random.randint(0, len(self.nodes))
-        connectioninnovationnumber = self.getInnovationNumber(innovationhistiry, self.getNode(newNodeno), self.nodes[randomnodes])
-        self.genes.append(ConnectionGene(self.getNode(newNodeno), self.nodes[randomnodes], 1, connectioninnovationnumber))
+        connectioninnovationnumber = self.getInnovationNumber(innovationhistiry, self.getNode(newNodeno),
+                                                              self.nodes[randomnodes])
+        self.genes.append(
+            ConnectionGene(self.getNode(newNodeno), self.nodes[randomnodes], 1, connectioninnovationnumber))
 
         self.connectNodes()
 
     def fullyConnection(self) -> bool:  # 检查是否全连接
         maxConnection = 0
         nodesinlayer = [0 for x in range(self.layers)]
-        # print(self.nodes[i].layer)
-        # print(nodesinlayer)
-        # for i in range(len(self.nodes)):
-        #     if self.nodes[i].layer >= self.layers:
-        #         print("nodelayer above gen layer:")
-        #         print(self.nodes[i].layer, self.layers)
-        #         return False
         for i in range(len(self.nodes)):
             nodesinlayer[self.nodes[i].layer] += 1
         for i in range(self.layers - 1):
@@ -168,9 +169,8 @@ class Genome:
             return True
         return False
 
-    def mutate(self, innovationhistory, mutateratio = mutateratiodict):  # 杂交时变异
+    def mutate(self, innovationhistory, mutateratio=mutateratiodict):  # 杂交时变异
         rand1 = np.random.uniform(0, 1)
-        print("mutate", mutateratio)
         if rand1 < mutateratio.get("1"):  # 0.8
             for i in range(len(self.genes)):
                 self.genes[i].mutateweight()
@@ -183,13 +183,14 @@ class Genome:
 
     def addConnection(self, innovationhistory):  # 添加一条新的连接
         if self.fullyConnection():
-            # print("connection failed!")
-            return
+            return  # print("connection failed!")
         randomnode1 = np.random.randint(0, len(self.nodes))
         randomnode2 = np.random.randint(0, len(self.nodes))
         for i in range(len(self.nodes)):
             for j in range(len(self.nodes)):
-                if (self.nodes[i].layer != self.nodes[j].layer) and (not (self.nodes[i].isconnectedto(self.nodes[j])) or not(self.nodes[j].isconnectedto(self.nodes[i]))):
+                if (self.nodes[i].layer != self.nodes[j].layer) and (
+                        not (self.nodes[i].isconnectedto(self.nodes[j])) or not (
+                self.nodes[j].isconnectedto(self.nodes[i]))):
                     randomnode1 = i
                     randomnode2 = j
                     break
@@ -197,8 +198,10 @@ class Genome:
             temp = randomnode2
             randomnode2 = randomnode1
             randomnode1 = temp
-        connectioninnovationnumber = self.getInnovationNumber(innovationhistory, self.nodes[randomnode1], self.nodes[randomnode2])
-        self.genes.append(ConnectionGene(self.nodes[randomnode1], self.nodes[randomnode2], np.random.uniform(-1, 1), connectioninnovationnumber))
+        connectioninnovationnumber = self.getInnovationNumber(innovationhistory, self.nodes[randomnode1],
+                                                              self.nodes[randomnode2])
+        self.genes.append(ConnectionGene(self.nodes[randomnode1], self.nodes[randomnode2], np.random.uniform(-1, 1),
+                                         connectioninnovationnumber))
         self.connectNodes()
 
     def crossover(self, parent2):  # 杂交
@@ -215,7 +218,7 @@ class Genome:
             parent2gene = self.matchingGene(parent2, self.genes[i].innovationNo)
             if parent2gene != -1:
                 if (not self.genes[i].enabled) or (not parent2.genes[parent2gene].enabled):
-                    if np.random.uniform(0, 1) < 0.75:
+                    if np.random.uniform(0, 1) < 0.5:
                         setenabled = False
                 rand = np.random.uniform(0, 1)
                 if rand < 0.5:
@@ -229,7 +232,8 @@ class Genome:
         for i in range(len(self.nodes)):
             child.nodes.append(self.nodes[i].clone())
         for i in range(len(childgens)):
-            child.genes.append(childgens[i].clone(child.getNode(childgens[i].fromNode.number), child.getNode(childgens[i].toNode.number)))
+            child.genes.append(childgens[i].clone(child.getNode(childgens[i].fromNode.number),
+                                                  child.getNode(childgens[i].toNode.number)))
             child.genes[i].enabled = isenabled[i]
         child.connectNodes()
         return child
@@ -252,6 +256,7 @@ class Genome:
         cloner.biasNode = self.biasNode
         cloner.connectNodes()
         return cloner
+
     """
         未实现功能：绘制Neat map
     

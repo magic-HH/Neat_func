@@ -11,10 +11,11 @@ import numpy as np
 from Population import *
 from threading import Thread
 from matplotlib import pyplot as plt
+
 changemap = dict()
 active_name = "sigmoid"  # 激活函数名
 nextConnectionNo = 1000
-inputNo = 10
+inputNo = 3
 outputNo = 1
 mutateratio1 = 0.8
 mutateratio2 = 0.5
@@ -23,7 +24,7 @@ mutateratiodict = {"1": mutateratio1, "2": mutateratio2, "3": mutateratio3}
 dataRatio = 15
 eachPopNum = 500
 seed = 2233
-datasplit = 50
+datasplit = 8  # 50
 dataPath = "./datafile/final_data.csv"
 breaktrainmark = True
 mutatemark = False
@@ -41,6 +42,7 @@ def timecount(func):
         print(*args)
         t2 = time.perf_counter()
         print("time cost:{}".format(t2 - t1))
+
     return count
 
 
@@ -50,9 +52,9 @@ def getdata():
     train_data = []
     label_data = []
     for d in data_list:
-        label_data.append(d.pop(-1))
+        label_data.append([d.pop(-1)])
         train_data.append(d)
-    train_data = np.array(train_data)#1604124439.585793
+    train_data = np.array(train_data)  # 1604124439.585793
     label_data = np.array(label_data)
     train_data, label_data = shuffle(train_data, label_data)
     train_idx, val_idx = next(
@@ -70,7 +72,7 @@ def breakthread():
     global hangupmark
     # global mutateratiodict
     global showcrossover
-    while(breaktrainmark):
+    while (breaktrainmark):
         databreak = input("break thread started, key to control\n")
         if databreak == "s":  # exit
             breaktrainmark = False
@@ -120,9 +122,9 @@ def cutplot(nodeplot, layers):
     for nodes in layer:
         for i in range(len(nodes)):
             if len(nodes) == layermaxnode:
-                changemap[nodes[i][0]] = (i ) * layermaxnode / len(nodes)
-            elif len(nodes)%2 == 1:
-                changemap[nodes[i][0]] = (i+1) *layermaxnode /(len(nodes) + 1)
+                changemap[nodes[i][0]] = (i) * layermaxnode / len(nodes)
+            elif len(nodes) % 2 == 1:
+                changemap[nodes[i][0]] = (i + 1) * layermaxnode / (len(nodes) + 1)
             else:
                 changemap[nodes[i][0]] = (i + 1) * layermaxnode / (len(nodes) + 2)
 
@@ -135,14 +137,18 @@ if __name__ == "__main__":
     X_train_train, y_train_train, X_train_val, y_train_val = getdata()
     pop = Populations(eachPopNum)
     while True:
-        if not breaktrainmark:
-            break
-        for i in range(0, int((len(X_train_train) / datasplit))):
-            index1 = i * datasplit
-            index2 = (i + 1) * datasplit
-            for i in range(200):
+                if not breaktrainmark:
+                        break
+        # for i in range(0, int((len(X_train_train) / datasplit))):
+        #     index1 = i * datasplit
+        #     index2 = (i + 1) * datasplit
+        #     for i in range(200):
+        #         t1 = time.perf_counter()
+        #         pop.checkloop(X_train_train[index1:index2], y_train_train[index1:index2])
+                dataset = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
+                datasetanswer = [ [1], [1], [1], [1], [0], [0], [0], [0]]
                 t1 = time.perf_counter()
-                pop.checkloop(X_train_train[index1:index2], y_train_train[index1:index2])
+                pop.checkloop(dataset, datasetanswer)
                 if showcrossover:
                     pop.naturalSelection(showcrossover, mutateratiop=mutateratiodict)
                     showcrossover = False
@@ -161,20 +167,24 @@ if __name__ == "__main__":
                     for connect in connectplot:
                         plt.plot([connect[0][1] * gap, connect[1][1] * gap],
                                  [changemap.get(connect[0][0]), changemap.get(connect[1][0])], "-b")
+                        plt.text(sum([connect[0][1] * gap, connect[1][1] * gap]) / 2,
+                                 sum([changemap.get(connect[0][0]), changemap.get(connect[1][0])]) / 2,
+                                 "%.2f" % connect[2], ha="center", fontsize=12)
+
                     plt.show()
                     drawnet = False
 
-                if pop.gen % 15 == 0:
-                    # if pop.gen > 400:
-                    #     mutateratiodict["3"] = 0
-                    # changemap.clear()
-
-                    f_log.write("gen:{}\n".format(pop.gen))
-                    for players in pop.pop:
-                        nodeplot, connectplot, layers = players.brain.printNodeMap()
-                        f_log.write(str(nodeplot)+"\n")
-                        f_log.write(str(connectplot)+"\n\n")
-                    f_log.flush()
+                # if pop.gen % 15 == 0:
+                #     # if pop.gen > 400:
+                #     #     mutateratiodict["3"] = 0
+                #     # changemap.clear()
+                #
+                #     f_log.write("gen:{}\n".format(pop.gen))
+                #     for players in pop.pop:
+                #         nodeplot, connectplot, layers = players.brain.printNodeMap()
+                #         f_log.write(str(nodeplot) + "\n")
+                #         f_log.write(str(connectplot) + "\n\n")
+                #     f_log.flush()
                     # gap = 5
                     # cutplot(nodeplot, layers)
                     # plt.title("Neat Map")
@@ -188,7 +198,10 @@ if __name__ == "__main__":
                     # hangupmark = False
 
                 # f_log.write("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}, marktime:{}\n".format(pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit, pop.bestplayer.rightnum, t2 - t1, time.time()))
-                print("fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}, marktime:{}".format(pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit, pop.bestplayer.rightnum, t2 - t1, time.time()))
+                print(
+                    "fitness:{}, popnum:{} ,species:{}, gen:{}, rightnum/total:{}, rightnum:{}, timecost:{}, marktime:{}".format(
+                        pop.bestfitness, len(pop.pop), len(pop.species), pop.gen, pop.bestplayer.rightnum / datasplit,
+                        pop.bestplayer.rightnum, t2 - t1, time.time()))
                 if not breaktrainmark:
                     exit()
                 elif hangupmark:

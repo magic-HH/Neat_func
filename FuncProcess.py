@@ -24,14 +24,19 @@ class Player:
             self.rightnum = 0
             self.fitness = 1
             for i in range(self.totalnum):
-                if self.decision[i][0] >= 0.5:
+                if self.decision[i][0] >= -0.1:
                     tempanswer = 1
                 else:
                     tempanswer = 0
-                if self.answer[i] == tempanswer:
+                if self.answer[i][0] == tempanswer:
                     self.rightnum += 1
-                    if self.answer[i] == 0:
+                    if self.answer[i][0] == 0:
                         self.fitness *= np.random.uniform(2, dataRatio - 7)
+            # print(self.rightnum)
+            # print(self.inputdata)
+            # print(self.decision)
+            # print((self.answer))
+            # print("--------------------------------------------------------")
 
             if self.rightnum == 0:
                 self.rightnum = np.random.uniform(0, 0.3)
@@ -43,8 +48,14 @@ class Player:
     def pridectData(self, inputdata, outputdata):
         self.inputdata = inputdata
         self.answer = outputdata
+        self.decision.clear()
         for data in self.inputdata:
             self.decision.append(self.brain.feedForward(data))
+        # self.decision.reverse()
+        # print(self.inputdata)
+        # print(self.answer)
+        # print(self.decision)
+        # print("-----------------")
 
     def crossover(self, parent2):
         child = Player()
